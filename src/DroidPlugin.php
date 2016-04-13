@@ -13,6 +13,7 @@ class DroidPlugin
     {
         $commands = [];
         $commands[] = new \Droid\Plugin\Fs\Command\FsMkdirCommand();
+        $commands[] = new \Droid\Plugin\Fs\Command\FsChmodCommand();
         return $commands;
     }
 }

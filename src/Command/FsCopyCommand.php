@@ -18,30 +18,30 @@ class FSCopyCommand extends Command
             ->addArgument(
                 'src',
                 InputArgument::REQUIRED,
-                'source filename'
+                'Source filename'
             )
             ->addArgument(
-                'dst',
+                'dest',
                 InputArgument::REQUIRED,
-                'destination filename'
+                'Destination filename'
             )
             ->addOption(
                 'owner',
                 'o',
                 InputOption::VALUE_REQUIRED,
-                'name of the owner of the copied directory'
+                'Name of the owner of the copied file'
             )
             ->addOption(
                 'group',
                 'g',
                 InputOption::VALUE_REQUIRED,
-                'name of the group of the copied directory'
+                'Name of the group of the copied file'
             )
             ->addOption(
                 'mask',
                 'm',
                 InputOption::VALUE_REQUIRED,
-                ' file permission mask (like 0640 - use octdec etc)'
+                'File permission mask (for example: 0640)'
             )
         ;
     }
@@ -49,37 +49,37 @@ class FSCopyCommand extends Command
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $src = $input->getArgument('src');
-        $dst = $input->getArgument('dst');
+        $dest = $input->getArgument('dest');
         $owner = $input->getOption('owner');
         $group = $input->getOption('group');
         $mask = $input->getOption('mask');
 
-        $output->WriteLn("Fs copy From: $src  to $dst ");
+        $output->WriteLn("Copying $src to $dest");
         if (!file_exists($src)) {
             throw new RuntimeException("Source file not exists: " . $src);
         }
-        $dirname = dirname($dst);
+        $dirname = dirname($dest);
         if (!file_exists($dirname) && !in_array($dirname, ['.', '..'])) {
-            throw new RuntimeException("Directory not exists: " . $dirname);
+            throw new RuntimeException("Destination directory does not exist: " . $dirname);
         }
-        if (!copy($src, $dst)) {
-            throw new RuntimeException("File copy failed: " . $src);
+        if (!copy($src, $dest)) {
+            throw new RuntimeException("Copy failed: " . $src);
         }
         if ($owner) {
-            if (!chown($dst, $owner)) {
-                throw new RuntimeException("failed to change Owner: " . $owner);
+            if (!chown($dest, $owner)) {
+                throw new RuntimeException("Failed to change owner: " . $owner);
             } else {
-                $output->WriteLn("Change owner:". $owner);
+                $output->WriteLn("Changed owner: " . $owner);
             }
         }
         if ($group) {
-            if (!chgrp($dst, $group)) {
-                throw new RuntimeException("failed to chnage Group: " . $group);
+            if (!chgrp($dest, $group)) {
+                throw new RuntimeException("Failed to change group: " . $group);
             }
         }
         if ($mask) {
-            if (!chmod($dst, octdec($mask))) {
-                throw new RuntimeException("failed to chnage Permission: " . $group);
+            if (!chmod($dest, octdec($mask))) {
+                throw new RuntimeException("Failed to change permission mask: " . $mask);
             }
         }
     }

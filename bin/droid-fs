@@ -24,4 +24,5 @@ $application->setCatchExceptions(true);
 $application->add(new Droid\Plugin\Fs\Command\FsChmodCommand());
 $application->add(new Droid\Plugin\Fs\Command\FsMkdirCommand());
 $application->add(new Droid\Plugin\Fs\Command\FsCopyCommand());
+$application->add(new Droid\Plugin\Fs\Command\FsRenameCommand());
 $application->run();

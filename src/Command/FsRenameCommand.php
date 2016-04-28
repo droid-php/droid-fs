@@ -31,7 +31,7 @@ class FsRenameCommand extends Command
     {
         $src = $input->getArgument('src');
         $dst = $input->getArgument('dst');
-        
+
         $output->WriteLn("Fs Rename From: $src  to $dst ");
 
         if (is_dir($src)) {
@@ -43,7 +43,7 @@ class FsRenameCommand extends Command
             throw new RuntimeException("Source ".$type." not exists: " . $src);
         }
         if (!rename($src, $dst)) {
-            throw new RuntimeException("Rename failed: ".$type.' to ' .$src);
+            throw new RuntimeException("Rename failed: " . $src .' to ' .$dst);
         }
     }
 }

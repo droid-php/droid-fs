@@ -25,20 +25,13 @@ class FsRenameCommand extends Command
                 InputArgument::REQUIRED,
                 'destination filename/directory'
             )
-            ->addOption(
-                'force',
-                'f',
-                InputOption::VALUE_NONE,
-                'Force delete, always return exit code 0, even if file does not exist'
-            );
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $src = $input->getArgument('src');
         $dst = $input->getArgument('dst');
-        $force = $input->getOption('force');
-
+        
         $output->WriteLn("Fs Rename From: $src  to $dst ");
 
         if (is_dir($src)) {
@@ -50,7 +43,7 @@ class FsRenameCommand extends Command
             throw new RuntimeException("Source ".$type." not exists: " . $src);
         }
         if (!rename($src, $dst)) {
-            throw new RuntimeException("Rename Failed From : ".$type.' to ' .$src);
+            throw new RuntimeException("Rename failed: ".$type.' to ' .$src);
         }
     }
 }

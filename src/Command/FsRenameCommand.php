@@ -18,21 +18,21 @@ class FsRenameCommand extends Command
             ->addArgument(
                 'src',
                 InputArgument::REQUIRED,
-                'source filename or directory'
+                'Source filename or directory'
             )
             ->addArgument(
-                'dst',
+                'dest',
                 InputArgument::REQUIRED,
-                'destination filename/directory'
-            )
+                'Destination filename or directory'
+            );
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $src = $input->getArgument('src');
-        $dst = $input->getArgument('dst');
+        $dest = $input->getArgument('dest');
 
-        $output->WriteLn("Fs Rename From: $src  to $dst ");
+        $output->WriteLn("Fs Rename From: $src  to $dest ");
 
         if (is_dir($src)) {
             $type = 'Directory';
@@ -40,10 +40,13 @@ class FsRenameCommand extends Command
             $type = 'File';
         }
         if (!file_exists($src)) {
-            throw new RuntimeException("Source ".$type." not exists: " . $src);
+            throw new RuntimeException("Source does not exist: " . $src);
         }
-        if (!rename($src, $dst)) {
-            throw new RuntimeException("Rename failed: " . $src .' to ' .$dst);
+        if (file_exists($dest)) {
+            throw new RuntimeException("Destination already exist: " . $dest);
+        }
+        if (!rename($src, $dest)) {
+            throw new RuntimeException("Rename failed: " . $src .' to ' .$dest);
         }
     }
 }

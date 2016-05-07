@@ -26,4 +26,5 @@ $application->add(new Droid\Plugin\Fs\Command\FsCopyCommand());
 $application->add(new Droid\Plugin\Fs\Command\FsMkdirCommand());
 $application->add(new Droid\Plugin\Fs\Command\FsMountCommand());
 $application->add(new Droid\Plugin\Fs\Command\FsRenameCommand());
+$application->add(new Droid\Plugin\Fs\Command\FsTemplateCommand());
 $application->run();

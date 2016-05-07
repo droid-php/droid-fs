@@ -18,7 +18,7 @@ class DroidPlugin
         $commands[] = new \Droid\Plugin\Fs\Command\FsMkdirCommand();
         $commands[] = new \Droid\Plugin\Fs\Command\FsMountCommand();
         $commands[] = new \Droid\Plugin\Fs\Command\FsRenameCommand();
-        //$commands[] = new \Droid\Plugin\Fs\Command\FsTemplateCommand();
+        $commands[] = new \Droid\Plugin\Fs\Command\FsTemplateCommand();
         return $commands;
     }
 }

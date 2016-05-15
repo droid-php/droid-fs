@@ -54,9 +54,11 @@ class FSCopyCommand extends Command
         $group = $input->getOption('group');
         $mask = $input->getOption('mask');
 
-        $output->WriteLn("Copying $src to $dest");
-        if (!file_exists($src)) {
-            throw new RuntimeException("Source file not exists: " . $src);
+        //$output->WriteLn("Copying $src to $dest");
+        if (substr($src, 0, 5)!='data:') {
+            if (!file_exists($src)) {
+                throw new RuntimeException("Source file not exists: " . $src);
+            }
         }
         $dirname = dirname($dest);
         if (!file_exists($dirname) && !in_array($dirname, ['.', '..'])) {

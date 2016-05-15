@@ -43,46 +43,117 @@ class FSCopyCommand extends Command
                 InputOption::VALUE_REQUIRED,
                 'File permission mask (for example: 0640)'
             )
+            ->addOption(
+                'check',
+                'c',
+                InputOption::VALUE_NONE,
+                'Run in check mode'
+            )
         ;
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        $startStamp = microtime(true);
         $src = $input->getArgument('src');
         $dest = $input->getArgument('dest');
         $owner = $input->getOption('owner');
         $group = $input->getOption('group');
         $mask = $input->getOption('mask');
+        $check = $input->getOption('check');
+        
+        $changed = false;
 
         //$output->WriteLn("Copying $src to $dest");
         if (substr($src, 0, 5)!='data:') {
             if (!file_exists($src)) {
-                throw new RuntimeException("Source file not exists: " . $src);
+                throw new RuntimeException("Source file does not exist: " . $src);
             }
         }
+        
         $dirname = dirname($dest);
         if (!file_exists($dirname) && !in_array($dirname, ['.', '..'])) {
             throw new RuntimeException("Destination directory does not exist: " . $dirname);
         }
-        if (!copy($src, $dest)) {
-            throw new RuntimeException("Copy failed: " . $src);
-        }
-        if ($owner) {
-            if (!chown($dest, $owner)) {
-                throw new RuntimeException("Failed to change owner: " . $owner);
-            } else {
-                $output->WriteLn("Changed owner: " . $owner);
+        
+        if (!file_exists($dest)) {
+            if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
+                $output->writeln('Destination file does not yet exist');
+            }
+            $changed = true;
+        } else {
+            if (file_get_contents($src) != file_get_contents($dest)) {
+                if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
+                    $output->writeln('File contents differ');
+                }
+                $changed = true;
             }
         }
-        if ($group) {
-            if (!chgrp($dest, $group)) {
-                throw new RuntimeException("Failed to change group: " . $group);
+        
+        if (!$check) {
+            if (!copy($src, $dest)) {
+                throw new RuntimeException("Copy failed: " . $src);
             }
         }
-        if ($mask) {
-            if (!chmod($dest, octdec($mask))) {
-                throw new RuntimeException("Failed to change permission mask: " . $mask);
+
+        if (file_exists($dest)) {
+            if ($owner) {
+                $currentOwner = posix_getpwuid(fileowner($dest))['name'];
+                
+                if ($currentOwner != $owner) {
+                    if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
+                        $output->writeln('File ownership differs');
+                    }
+                    $changed = true;
+
+                    if (!$check) {
+                        if (!chown($dest, $owner)) {
+                            throw new RuntimeException("Failed to change owner: " . $owner);
+                        } else {
+                            $output->WriteLn("Changed owner: " . $owner);
+                        }
+                    }
+                }
+            }
+            
+            if ($group) {
+                $currentGroup = posix_getgrgid(filegroup($dest))['name'];
+                
+                if ($currentGroup != $group) {
+                    if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
+                        $output->writeln('File group differs');
+                    }
+                    $changed = true;
+                
+                    if (!$check) {
+                        if (!chgrp($dest, $group)) {
+                            throw new RuntimeException("Failed to change group: " . $group);
+                        }
+                    }
+                }
+            }
+            
+            if ($mask) {
+                $currentMask = fileperms($dest);
+                $currentMask = substr(decoct($currentMask), -3);
+                if ((int)$currentMask != (int)$mask) {
+                    if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
+                        $output->writeln('File mask differs');
+                    }
+                    $changed = true;
+                    
+                    if (!$check) {
+                        if (!chmod($dest, octdec($mask))) {
+                            throw new RuntimeException("Failed to change permission mask: " . $mask);
+                        }
+                    }
+                }
             }
         }
+        $res = [];
+        $res['changed'] = $changed;
+        $res['start'] = microtime(true);
+        $res['end'] = microtime(true);
+        $output->writeLn('[DROID-RESULT] ' . json_encode($res));
     }
 }

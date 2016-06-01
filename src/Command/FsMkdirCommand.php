@@ -35,7 +35,7 @@ class FsMkdirCommand extends Command
             )
         ;
     }
-    
+
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $directory = $input->getArgument('directory');

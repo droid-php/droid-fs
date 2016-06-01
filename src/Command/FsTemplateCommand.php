@@ -47,12 +47,12 @@ class FsTemplateCommand extends Command
             )
         ;
     }
-    
+
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $src = $input->getArgument('src');
         $content = Utils::getContents($src);
-        
+
         $dest = $input->getArgument('dest');
         $dest = Utils::normalizePath($dest);
 
@@ -63,12 +63,12 @@ class FsTemplateCommand extends Command
             $mode = octdec($mode);
         }
 
-        
+
         $output->writeLn("Creating file $dest. Mode: " . decoct($mode));
-        
+
         $php = LightnCandy::compile($content);
         $render = LightnCandy::prepare($php);
-        
+
         $data = [];
         $jsonFilename = $input->getOption('json');
         if ($jsonFilename) {
@@ -78,9 +78,9 @@ class FsTemplateCommand extends Command
                 throw new RuntimeException("Can't parse data as JSON");
             }
         }
-        
+
         $content = $render($data);
-        
+
         file_put_contents($dest, $content);
     }
 }

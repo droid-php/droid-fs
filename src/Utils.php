@@ -21,7 +21,7 @@ class Utils
         }
         return $path;
     }
-    
+
     public static function getContents($filename)
     {
         if (substr($filename, 0, 5) == 'data:') {

@@ -4,7 +4,6 @@ namespace Droid\Plugin\Fs\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Droid\Plugin\Fs\Utils;
@@ -28,7 +27,7 @@ class FsChmodCommand extends Command
             )
         ;
     }
-    
+
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $filename = $input->getArgument('filename');
@@ -44,11 +43,11 @@ class FsChmodCommand extends Command
         if (!file_exists($filename)) {
             throw new RuntimeException("File does not exist: " . $filename);
         }
-        
+
         $output->writeLn("Fs chmod: " . decoct($mode)  . " $filename");
 
 
         chmod($filename, $mode);
-        
+
     }
 }

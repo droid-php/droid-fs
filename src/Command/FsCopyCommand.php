@@ -6,10 +6,9 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Droid\Plugin\Fs\Utils;
 use RuntimeException;
 
-class FSCopyCommand extends Command
+class FsCopyCommand extends Command
 {
     public function configure()
     {
@@ -61,7 +60,7 @@ class FSCopyCommand extends Command
         $group = $input->getOption('group');
         $mask = $input->getOption('mask');
         $check = $input->getOption('check');
-        
+
         $changed = false;
 
         //$output->WriteLn("Copying $src to $dest");
@@ -70,12 +69,12 @@ class FSCopyCommand extends Command
                 throw new RuntimeException("Source file does not exist: " . $src);
             }
         }
-        
+
         $dirname = dirname($dest);
         if (!file_exists($dirname) && !in_array($dirname, ['.', '..'])) {
             throw new RuntimeException("Destination directory does not exist: " . $dirname);
         }
-        
+
         if (!file_exists($dest)) {
             if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
                 $output->writeln('Destination file does not yet exist');
@@ -89,7 +88,7 @@ class FSCopyCommand extends Command
                 $changed = true;
             }
         }
-        
+
         if (!$check) {
             if (!copy($src, $dest)) {
                 throw new RuntimeException("Copy failed: " . $src);
@@ -99,7 +98,7 @@ class FSCopyCommand extends Command
         if (file_exists($dest)) {
             if ($owner) {
                 $currentOwner = posix_getpwuid(fileowner($dest))['name'];
-                
+
                 if ($currentOwner != $owner) {
                     if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
                         $output->writeln('File ownership differs');
@@ -115,16 +114,16 @@ class FSCopyCommand extends Command
                     }
                 }
             }
-            
+
             if ($group) {
                 $currentGroup = posix_getgrgid(filegroup($dest))['name'];
-                
+
                 if ($currentGroup != $group) {
                     if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
                         $output->writeln('File group differs');
                     }
                     $changed = true;
-                
+
                     if (!$check) {
                         if (!chgrp($dest, $group)) {
                             throw new RuntimeException("Failed to change group: " . $group);
@@ -132,7 +131,7 @@ class FSCopyCommand extends Command
                     }
                 }
             }
-            
+
             if ($mask) {
                 $currentMask = fileperms($dest);
                 $currentMask = substr(decoct($currentMask), -3);
@@ -141,7 +140,7 @@ class FSCopyCommand extends Command
                         $output->writeln('File mask differs');
                     }
                     $changed = true;
-                    
+
                     if (!$check) {
                         if (!chmod($dest, octdec($mask))) {
                             throw new RuntimeException("Failed to change permission mask: " . $mask);

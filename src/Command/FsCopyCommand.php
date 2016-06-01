@@ -6,10 +6,13 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Droid\Lib\Plugin\Command\CheckableTrait;
 use RuntimeException;
 
 class FsCopyCommand extends Command
 {
+    use CheckableTrait;
+
     public function configure()
     {
         $this->setName('fs:copy')
@@ -42,13 +45,8 @@ class FsCopyCommand extends Command
                 InputOption::VALUE_REQUIRED,
                 'File permission mask (for example: 0640)'
             )
-            ->addOption(
-                'check',
-                'c',
-                InputOption::VALUE_NONE,
-                'Run in check mode'
-            )
         ;
+        $this->configureCheckMode();
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
@@ -59,9 +57,7 @@ class FsCopyCommand extends Command
         $owner = $input->getOption('owner');
         $group = $input->getOption('group');
         $mask = $input->getOption('mask');
-        $check = $input->getOption('check');
-
-        $changed = false;
+        $this->activateCheckMode($input);
 
         //$output->WriteLn("Copying $src to $dest");
         if (substr($src, 0, 5)!='data:') {
@@ -79,17 +75,17 @@ class FsCopyCommand extends Command
             if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
                 $output->writeln('Destination file does not yet exist');
             }
-            $changed = true;
+            $this->markChange();
         } else {
             if (file_get_contents($src) != file_get_contents($dest)) {
                 if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
                     $output->writeln('File contents differ');
                 }
-                $changed = true;
+                $this->markChange();
             }
         }
 
-        if (!$check) {
+        if (!$this->checkMode()) {
             if (!copy($src, $dest)) {
                 throw new RuntimeException("Copy failed: " . $src);
             }
@@ -103,9 +99,9 @@ class FsCopyCommand extends Command
                     if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
                         $output->writeln('File ownership differs');
                     }
-                    $changed = true;
+                    $this->markChange();
 
-                    if (!$check) {
+                    if (!$this->checkMode()) {
                         if (!chown($dest, $owner)) {
                             throw new RuntimeException("Failed to change owner: " . $owner);
                         } else {
@@ -122,9 +118,9 @@ class FsCopyCommand extends Command
                     if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
                         $output->writeln('File group differs');
                     }
-                    $changed = true;
+                    $this->markChange();
 
-                    if (!$check) {
+                    if (!$this->checkMode()) {
                         if (!chgrp($dest, $group)) {
                             throw new RuntimeException("Failed to change group: " . $group);
                         }
@@ -139,9 +135,9 @@ class FsCopyCommand extends Command
                     if ($output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
                         $output->writeln('File mask differs');
                     }
-                    $changed = true;
+                    $this->markChange();
 
-                    if (!$check) {
+                    if (!$this->checkMode()) {
                         if (!chmod($dest, octdec($mask))) {
                             throw new RuntimeException("Failed to change permission mask: " . $mask);
                         }
@@ -149,10 +145,6 @@ class FsCopyCommand extends Command
                 }
             }
         }
-        $res = [];
-        $res['changed'] = $changed;
-        $res['start'] = microtime(true);
-        $res['end'] = microtime(true);
-        $output->writeLn('[DROID-RESULT] ' . json_encode($res));
+        $this->reportChange($output);
     }
 }

@@ -5,10 +5,13 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Droid\Lib\Plugin\Command\CheckableTrait;
 use RuntimeException;
 
 class FsRenameCommand extends Command
 {
+    use CheckableTrait;
+
     public function configure()
     {
         $this->setName('fs:rename')
@@ -23,10 +26,12 @@ class FsRenameCommand extends Command
                 InputArgument::REQUIRED,
                 'Destination filename or directory'
             );
+        $this->configureCheckMode();
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->activateCheckMode($input);
         $src = $input->getArgument('src');
         $dest = $input->getArgument('dest');
 
@@ -43,8 +48,10 @@ class FsRenameCommand extends Command
         if (file_exists($dest)) {
             throw new RuntimeException("Destination already exist: " . $dest);
         }
-        if (!rename($src, $dest)) {
+        $this->markChange();
+        if (!$this->checkMode() && !rename($src, $dest)) {
             throw new RuntimeException("Rename failed: " . $src .' to ' .$dest);
         }
+        $this->reportChange($output);
     }
 }

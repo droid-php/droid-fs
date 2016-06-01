@@ -8,6 +8,9 @@ class Utils
 {
     public static function normalizePath($path)
     {
+        if (preg_match('@^\w+://@', $path)) {
+            return $path; // has a scheme, e.g. "file://"
+        }
         switch ($path[0]) {
             case '/':
                 break;

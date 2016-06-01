@@ -8,11 +8,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Droid\Lib\Plugin\Command\CheckableTrait;
 use Droid\Plugin\Fs\FstabLine;
 use RuntimeException;
 
 class FsMountCommand extends Command
 {
+    use CheckableTrait;
+
     public function configure()
     {
         $this->setName('fs:mount')
@@ -59,10 +62,12 @@ class FsMountCommand extends Command
                 0
             )
         ;
+        $this->configureCheckMode();
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->activateCheckMode($input);
         $fileSystem = $input->getArgument('filesystem');
         $mountPoint = $input->getArgument('mount-point');
         $type = $input->getArgument('type');
@@ -83,6 +88,13 @@ class FsMountCommand extends Command
         $output->WriteLn("Updating $fstab");
         if (!file_exists($fstab)) {
             throw new RuntimeException('fstab file does not exist: ' . $fstab);
+        }
+
+        $this->markChange();
+
+        if ($this->checkMode()) {
+            $this->reportChange();
+            return 0;
         }
 
         $content = file_get_contents($fstab);
@@ -138,5 +150,7 @@ class FsMountCommand extends Command
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
+
+        $this->reportChange();
     }
 }

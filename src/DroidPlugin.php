@@ -2,6 +2,11 @@
 
 namespace Droid\Plugin\Fs;
 
+use Symfony\Component\Process\ProcessBuilder;
+
+use Droid\Plugin\Fs\Command\FsChownCommand;
+use Droid\Plugin\Fs\Service\PosixAclObjectLookup;
+
 class DroidPlugin
 {
     public function __construct($droid)
@@ -14,6 +19,10 @@ class DroidPlugin
         $commands = [];
 
         $commands[] = new \Droid\Plugin\Fs\Command\FsChmodCommand();
+        $commands[] = new FsChownCommand(
+            new PosixAclObjectLookup,
+            new ProcessBuilder
+        );
         $commands[] = new \Droid\Plugin\Fs\Command\FsCopyCommand();
         $commands[] = new \Droid\Plugin\Fs\Command\FsMkdirCommand();
         $commands[] = new \Droid\Plugin\Fs\Command\FsMountCommand();

@@ -7,11 +7,14 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Droid\Lib\Plugin\Command\CheckableTrait;
 use Droid\Plugin\Fs\Utils;
 use RuntimeException;
 
 class FsMkdirCommand extends Command
 {
+    use CheckableTrait;
+
     public function configure()
     {
         $this->setName('fs:mkdir')
@@ -34,10 +37,12 @@ class FsMkdirCommand extends Command
                 'Force'
             )
         ;
+        $this->configureCheckMode();
     }
-    
+
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->activateCheckMode($input);
         $directory = $input->getArgument('directory');
         $directory = Utils::normalizePath($directory);
         $output->writeLn("Fs mkdir: $directory");
@@ -52,9 +57,13 @@ class FsMkdirCommand extends Command
         } else {
             $mode = octdec($mode);
         }
-        @mkdir($directory, $mode, true);
-        if (!file_exists($directory)) {
-            throw new RuntimeException("Directory creation failed: " . $directory);
+        $this->markChange();
+        if (!$this->checkMode()) {
+            @mkdir($directory, $mode, true);
+            if (!file_exists($directory)) {
+                throw new RuntimeException("Directory creation failed: " . $directory);
+            }
         }
+        $this->reportChange($output);
     }
 }

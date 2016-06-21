@@ -3,6 +3,8 @@
 
 use Symfony\Component\Console\Application;
 
+use Droid\Plugin\Fs\DroidPlugin;
+
 $loader = __DIR__ . '/../vendor/autoload.php';
 
 if (!file_exists($loader)) {
@@ -21,10 +23,8 @@ require $loader;
 
 $application = new Application('Droid FS', '1.0.0');
 $application->setCatchExceptions(true);
-$application->add(new Droid\Plugin\Fs\Command\FsChmodCommand());
-$application->add(new Droid\Plugin\Fs\Command\FsCopyCommand());
-$application->add(new Droid\Plugin\Fs\Command\FsMkdirCommand());
-$application->add(new Droid\Plugin\Fs\Command\FsMountCommand());
-$application->add(new Droid\Plugin\Fs\Command\FsRenameCommand());
-$application->add(new Droid\Plugin\Fs\Command\FsTemplateCommand());
+$registry = new DroidPlugin($application);
+foreach ($registry->getCommands() as $command) {
+    $application->add($command);
+}
 $application->run();

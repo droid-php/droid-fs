@@ -7,14 +7,15 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ProcessBuilder;
 use Symfony\Component\Process\Exception\ProcessFailedException;
-use Droid\Plugin\Fs\Utils;
+use Droid\Lib\Plugin\Command\CheckableTrait;
 use Droid\Plugin\Fs\FstabLine;
 use RuntimeException;
 
-class FSMountCommand extends Command
+class FsMountCommand extends Command
 {
+    use CheckableTrait;
+
     public function configure()
     {
         $this->setName('fs:mount')
@@ -61,10 +62,12 @@ class FSMountCommand extends Command
                 0
             )
         ;
+        $this->configureCheckMode();
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->activateCheckMode($input);
         $fileSystem = $input->getArgument('filesystem');
         $mountPoint = $input->getArgument('mount-point');
         $type = $input->getArgument('type');
@@ -86,7 +89,14 @@ class FSMountCommand extends Command
         if (!file_exists($fstab)) {
             throw new RuntimeException('fstab file does not exist: ' . $fstab);
         }
-        
+
+        $this->markChange();
+
+        if ($this->checkMode()) {
+            $this->reportChange();
+            return 0;
+        }
+
         $content = file_get_contents($fstab);
         $rows = explode("\n", $content);
         foreach ($rows as $row) {
@@ -95,7 +105,7 @@ class FSMountCommand extends Command
             $lines[] = $line;
         }
         //print_r($lines);
-        
+
         $newLine = null;
         foreach ($lines as $line) {
             if (trim($line->getFileSystem())==$fileSystem) {
@@ -113,7 +123,7 @@ class FSMountCommand extends Command
         $newLine->setOptions($options);
         $newLine->setDump($dump);
         $newLine->setPass($pass);
-        
+
         $o = '';
         foreach ($lines as $line) {
             $o .= $line->render();
@@ -123,7 +133,7 @@ class FSMountCommand extends Command
             file_put_contents($fstab . '.'. date('Y-m-d_H-i-s') . '.backup', $content);
         }
         file_put_contents($fstab, $o);
-        
+
         $cmd = 'mountpoint ' . $newLine->getMountPoint();
         $process = new Process($cmd);
         $process->run();
@@ -131,14 +141,16 @@ class FSMountCommand extends Command
             $output->WriteLn("Already mounted " . $newLine->getMountPoint());
             return 0;
         }
-        
+
         $cmd = 'mount ' . $newLine->getMountPoint();
         $process = new Process($cmd);
         $output->writeLn($process->getCommandLine());
         $process->run();
-        
+
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
+
+        $this->reportChange();
     }
 }

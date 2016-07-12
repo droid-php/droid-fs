@@ -72,7 +72,7 @@ class FsTemplateCommand extends Command
         $this->markChange();
 
         if ($this->checkMode()) {
-            $this->reportChange();
+            $this->reportChange($output);
             return 0;
         }
 

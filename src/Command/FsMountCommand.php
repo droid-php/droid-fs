@@ -93,7 +93,7 @@ class FsMountCommand extends Command
         $this->markChange();
 
         if ($this->checkMode()) {
-            $this->reportChange();
+            $this->reportChange($output);
             return 0;
         }
 
@@ -151,6 +151,6 @@ class FsMountCommand extends Command
             throw new ProcessFailedException($process);
         }
 
-        $this->reportChange();
+        $this->reportChange($output);
     }
 }

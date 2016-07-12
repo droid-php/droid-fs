@@ -27,19 +27,22 @@ class FstabLine
 
         $this->type = 'mount';
 
-
-        // Remove trailing tabs
-        $line = trim($this->content, "\t");
-        $line = str_replace(' ', "\t", $line);
-        // Remove multiple tabs
-        $line = str_replace("\t\t\t", "\t", $line);
-        $line = str_replace("\t\t\t", "\t", $line);
-        $line = str_replace("\t\t", "\t", $line);
+        // Normalise horizontal whitespace to single tabs
+        $line = str_replace(' ', "\t", trim($this->content, " \t"));
+        while (true) {
+            $prev = $line;
+            $line = str_replace("\t\t", "\t", $line);
+            if ($line === $prev) {
+                break;
+            }
+        }
 
         // Split into parts
         $part = explode("\t", $line);
         if (count($part)!=6) {
-            throw new RuntimeException("Line contains unexpected amount of parts: " . count($part) . ": [" . $line . "]");
+            throw new RuntimeException(
+                "Line contains unexpected amount of parts: " . count($part) . ": [" . $line . "]"
+            );
         }
         $this->setFileSystem($part[0]);
         $this->setMountPoint($part[1]);

@@ -141,23 +141,22 @@ class FstabLine
 
     public function render()
     {
-        switch ($this->getType()) {
-            case 'comment':
-                // leave untouched
-                return $this->content . "\n";
-            case 'empty':
-                return '';
-            case 'mount':
-                $o = $this->getFileSystem() . "\t";
-                $o .= $this->getMountPoint() . "\t";
-                $o .= $this->getFileSystemType() . "\t";
-                $o .= $this->getOptions() . "\t";
-                $o .= $this->getDump() . "\t";
-                $o .= $this->getPass();
-                return $o . "\n";
-            default:
-                throw new RuntimeException("Unsupported line type: " . $this->getType());
-                break;
+        if (!in_array($this->getType(), array('comment', 'empty', 'mount'))) {
+            throw new RuntimeException("Unsupported line type: " . $this->getType());
         }
+        if ($this->getType() === 'mount' && !$this->content) {
+            $this->content = implode(
+                "\t",
+                array(
+                    $this->getFileSystem(),
+                    $this->getMountPoint(),
+                    $this->getFileSystemType(),
+                    $this->getOptions(),
+                    $this->getDump(),
+                    $this->getPass(),
+                )
+            );
+        }
+        return $this->content . "\n";
     }
 }

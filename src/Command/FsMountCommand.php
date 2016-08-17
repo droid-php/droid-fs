@@ -61,6 +61,12 @@ class FsMountCommand extends Command
                 InputOption::VALUE_REQUIRED,
                 0
             )
+            ->addOption(
+                'skip-mount',
+                null,
+                InputOption::VALUE_NONE,
+                'Update the fstab file, but do not perform the mount operation.'
+            )
         ;
         $this->configureCheckMode();
     }
@@ -133,6 +139,12 @@ class FsMountCommand extends Command
             file_put_contents($fstab . '.'. date('Y-m-d_H-i-s') . '.backup', $content);
         }
         file_put_contents($fstab, $o);
+
+        if ($input->getOption('skip-mount')) {
+            $output->WriteLn('I am not mounting because you asked me to --skip-mount.');
+            $this->reportChange($output);
+            return;
+        }
 
         $cmd = 'mountpoint ' . $newLine->getMountPoint();
         $process = new Process($cmd);

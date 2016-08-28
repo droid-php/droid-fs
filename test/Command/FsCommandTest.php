@@ -9,7 +9,6 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Droid\Plugin\Fs\Command\FsChmodCommand;
 use Droid\Plugin\Fs\Command\FsCopyCommand;
 use Droid\Plugin\Fs\Command\FsMkdirCommand;
-use Droid\Plugin\Fs\Command\FsMountCommand;
 use Droid\Plugin\Fs\Command\FsRenameCommand;
 use Droid\Plugin\Fs\Command\FsTemplateCommand;
 
@@ -65,37 +64,6 @@ class FsCommandTest extends \PHPUnit_Framework_TestCase
         $tester->execute(array(
             'command' => $this->app->find('fs:mkdir')->getName(),
             'directory' => vfsStream::url('root/new_dir')
-        ));
-    }
-
-    /**
-     * @expectedException \Symfony\Component\Process\Exception\ProcessFailedException
-     *
-     * We are not mocking Process and so this command is executing `mount` for
-     * real.  It would be better not to execute mount, especially if this test
-     * were doing more than sanity checking the command, but it's not, so we
-     * are, so there.
-     */
-    public function testFsMountCommandIsSane()
-    {
-        $command = new FsMountCommand;
-        $tester = new CommandTester($command);
-        $this->app->add($command);
-
-        vfsStream::create(
-            array(
-                'etc' => array('fstab' => '# /etc/fstab: static file system information.'),
-                'mnt' => array(),
-                'dev' => array('cdrom' => array())
-            )
-        );
-
-        $tester->execute(array(
-            'command' => $this->app->find('fs:mount')->getName(),
-            'filesystem' => vfsStream::url('root/dev/crdrom'),
-            'mount-point' => vfsStream::url('root/mnt/crdrom'),
-            'type' => 'iso9660',
-            '--fstab' => vfsStream::url('root/etc/fstab'),
         ));
     }
 

@@ -5,6 +5,9 @@ namespace Droid\Plugin\Fs;
 use Symfony\Component\Process\ProcessBuilder;
 
 use Droid\Plugin\Fs\Command\FsChownCommand;
+use Droid\Plugin\Fs\Model\FsMount;
+use Droid\Plugin\Fs\Model\Fstab\FstabBuilder;
+use Droid\Plugin\Fs\Model\Fstab\FstabLineFactory;
 use Droid\Plugin\Fs\Service\PosixAclObjectLookup;
 
 class DroidPlugin
@@ -25,7 +28,10 @@ class DroidPlugin
         );
         $commands[] = new \Droid\Plugin\Fs\Command\FsCopyCommand();
         $commands[] = new \Droid\Plugin\Fs\Command\FsMkdirCommand();
-        $commands[] = new \Droid\Plugin\Fs\Command\FsMountCommand();
+        $commands[] = new \Droid\Plugin\Fs\Command\FsMountCommand(
+            new FstabBuilder(new FstabLineFactory),
+            new FsMount(new ProcessBuilder)
+        );
         $commands[] = new \Droid\Plugin\Fs\Command\FsRenameCommand();
         $commands[] = new \Droid\Plugin\Fs\Command\FsTemplateCommand();
         $commands[] = new \Droid\Plugin\Fs\Command\FsTouchCommand();

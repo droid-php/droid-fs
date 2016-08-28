@@ -1,20 +1,35 @@
 <?php
 namespace Droid\Plugin\Fs\Command;
 
+use RuntimeException;
+
+use Droid\Lib\Plugin\Command\CheckableTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
-use Droid\Lib\Plugin\Command\CheckableTrait;
-use Droid\Plugin\Fs\FstabLine;
-use RuntimeException;
+
+use Droid\Plugin\Fs\Model\FsMount;
+use Droid\Plugin\Fs\Model\Fstab\FstabBuilder;
+use Droid\Plugin\Fs\Model\Fstab\FstabException;
 
 class FsMountCommand extends Command
 {
     use CheckableTrait;
+
+    protected $fstabBuilder;
+    protected $fsMount;
+
+    public function __construct(
+        FstabBuilder $fstabBuilder,
+        FsMount $fsMount,
+        $name = null
+    ) {
+        $this->fstabBuilder = $fstabBuilder;
+        $this->fsMount = $fsMount;
+        return parent::__construct($name);
+    }
 
     public function configure()
     {
@@ -40,26 +55,26 @@ class FsMountCommand extends Command
                 null,
                 InputOption::VALUE_REQUIRED,
                 'Name of the fstab filename, defaults to /etc/fstab',
-                '/etc/fstab',
-                'defaults'
+                '/etc/fstab'
             )
             ->addOption(
                 'options',
                 'o',
                 InputOption::VALUE_REQUIRED,
-                'Options'
+                'Mount options',
+                'defaults'
             )
             ->addOption(
                 'dump',
                 'd',
                 InputOption::VALUE_REQUIRED,
-                0
+                'Dump frequency.'
             )
             ->addOption(
                 'pass',
                 'p',
                 InputOption::VALUE_REQUIRED,
-                0
+                'Pass number'
             )
             ->addOption(
                 'skip-mount',
@@ -74,71 +89,57 @@ class FsMountCommand extends Command
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $this->activateCheckMode($input);
-        $fileSystem = $input->getArgument('filesystem');
-        $mountPoint = $input->getArgument('mount-point');
-        $type = $input->getArgument('type');
-        $options = $input->getOption('options');
-        if (!$options) {
-            $options = 'defaults';
-        }
-        $dump = $input->getOption('dump');
-        if (!$dump) {
-            $dump = '0';
-        }
-        $pass = $input->getOption('pass');
-        if (!$pass) {
-            $pass = '0';
-        }
-        $fstab = $input->getOption('fstab');
 
-        $output->WriteLn("Updating $fstab");
-        if (!file_exists($fstab)) {
-            throw new RuntimeException('fstab file does not exist: ' . $fstab);
-        }
-
-        $this->markChange();
-
-        if ($this->checkMode()) {
-            $this->reportChange($output);
-            return 0;
+        $fstab = $this
+            ->fstabBuilder
+            ->buildFstab($input->getOption('fstab'))
+        ;
+        try {
+            $fstab->addEntry(
+                $input->getArgument('filesystem'),
+                $input->getArgument('mount-point'),
+                $input->getArgument('type'),
+                $input->getOption('options'),
+                $input->getOption('dump'),
+                $input->getOption('pass')
+            );
+        } catch (FstabException $e) {
+            throw new RuntimeException(
+                sprintf(
+                    'I cannot add an entry to the fstab file "%s".',
+                    $input->getOption('fstab')
+                ),
+                null,
+                $e
+            );
         }
 
-        $content = file_get_contents($fstab);
-        $rows = explode("\n", $content);
-        foreach ($rows as $row) {
-            $line = new FstabLine();
-            $line->setContent($row);
-            $lines[] = $line;
-        }
-        //print_r($lines);
-
-        $newLine = null;
-        foreach ($lines as $line) {
-            if (trim($line->getFileSystem())==$fileSystem) {
-                $newLine = $line;
+        if ($fstab->changed()) {
+            $this->markChange();
+            if ($this->checkMode()) {
+                $this->reportChange($output);
+                return 0;
             }
+            $output->WriteLn(
+                sprintf(
+                    'I am making your changes to the fstab file "%s".',
+                    $input->getOption('fstab')
+                )
+            );
+            $fstab
+                ->backup($this->backupName($input->getOption('fstab')))
+                ->finish()
+            ;
+        } else {
+            $output->WriteLn(
+                sprintf(
+                    'I am not making any changes to the fstab file "%s"; it already has an entry for "%s %s".',
+                    $input->getOption('fstab'),
+                    $input->getArgument('filesystem'),
+                    $input->getArgument('mount-point')
+                )
+            );
         }
-        if (!$newLine) {
-            $newLine = new FstabLine();
-            $newLine->setType('mount');
-            $lines[] = $newLine;
-        }
-        $newLine->setFileSystem($fileSystem);
-        $newLine->setMountPoint($mountPoint);
-        $newLine->setFileSystemType($type);
-        $newLine->setOptions($options);
-        $newLine->setDump($dump);
-        $newLine->setPass($pass);
-
-        $o = '';
-        foreach ($lines as $line) {
-            $o .= $line->render();
-        }
-        //echo $o;
-        if ($o != $content) {
-            file_put_contents($fstab . '.'. date('Y-m-d_H-i-s') . '.backup', $content);
-        }
-        file_put_contents($fstab, $o);
 
         if ($input->getOption('skip-mount')) {
             $output->WriteLn('I am not mounting because you asked me to --skip-mount.');
@@ -146,23 +147,41 @@ class FsMountCommand extends Command
             return;
         }
 
-        $cmd = 'mountpoint ' . $newLine->getMountPoint();
-        $process = new Process($cmd);
-        $process->run();
-        if ($process->isSuccessful()) {
-            $output->WriteLn("Already mounted " . $newLine->getMountPoint());
+        $isMounted = $this->fsMount->mounted($input->getArgument('mount-point'));
+        if ($isMounted && $fstab->changed()) {
+            $output->WriteLn(
+                sprintf(
+                    'The mount info for "%s" is changed; I attempt a umount.',
+                    $input->getArgument('mount-point')
+                )
+            );
+            $this->fsMount->umount($input->getArgument('mount-point'));
+        } elseif ($isMounted) {
+            $output->WriteLn(
+                sprintf(
+                    'The mount info for "%s" is unchanged and already mounted. Nothing to do.',
+                    $input->getArgument('mount-point')
+                )
+            );
+            $this->reportChange($output);
             return 0;
         }
 
-        $cmd = 'mount ' . $newLine->getMountPoint();
-        $process = new Process($cmd);
-        $output->writeLn($process->getCommandLine());
-        $process->run();
+        $this->markChange();
 
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
+        $output->WriteLn(
+            sprintf(
+                'I attempt to mount "%s".',
+                $input->getArgument('mount-point')
+            )
+        );
+        $this->fsMount->mount($input->getArgument('mount-point'));
 
         $this->reportChange($output);
+    }
+
+    private function backupName($originalName)
+    {
+        return sprintf('%s.%s.backup', $originalName, date('Y-m-d_H-i-s'));
     }
 }

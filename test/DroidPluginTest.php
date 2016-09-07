@@ -25,6 +25,7 @@ class DroidPluginTest extends PHPUnit_Framework_TestCase
                 'Droid\Plugin\Fs\Command\FsMkdirCommand',
                 'Droid\Plugin\Fs\Command\FsMountCommand',
                 'Droid\Plugin\Fs\Command\FsRenameCommand',
+                'Droid\Plugin\Fs\Command\FsSetlineCommand',
                 'Droid\Plugin\Fs\Command\FsTemplateCommand',
                 'Droid\Plugin\Fs\Command\FsTouchCommand',
             ),

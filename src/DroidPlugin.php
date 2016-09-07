@@ -6,8 +6,11 @@ use Symfony\Component\Process\ProcessBuilder;
 
 use Droid\Plugin\Fs\Command\FsChownCommand;
 use Droid\Plugin\Fs\Command\FsMountCommand;
+use Droid\Plugin\Fs\Command\FsSetlineCommand;
 use Droid\Plugin\Fs\Model\File\FileFactory;
+use Droid\Plugin\Fs\Model\File\LineBasedFile;
 use Droid\Plugin\Fs\Model\File\LineFactory;
+use Droid\Plugin\Fs\Model\File\NameValueLine;
 use Droid\Plugin\Fs\Model\FsMount;
 use Droid\Plugin\Fs\Model\Fstab\Fstab;
 use Droid\Plugin\Fs\Model\Fstab\FstabLine;
@@ -36,6 +39,12 @@ class DroidPlugin
             new FsMount(new ProcessBuilder)
         );
         $commands[] = new \Droid\Plugin\Fs\Command\FsRenameCommand();
+        $commands[] = new FsSetlineCommand(
+            new FileFactory(
+                LineBasedFile::class,
+                new LineFactory(NameValueLine::class)
+            )
+        );
         $commands[] = new \Droid\Plugin\Fs\Command\FsTemplateCommand();
         $commands[] = new \Droid\Plugin\Fs\Command\FsTouchCommand();
         return $commands;

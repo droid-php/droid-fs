@@ -4,28 +4,21 @@ namespace Droid\Plugin\Fs\Model\Fstab;
 
 use InvalidArgumentException;
 
-class FstabLine
+use Droid\Plugin\Fs\Model\File\AbstractLine;
+
+class FstabLine extends AbstractLine
 {
     private $defaults = array(
         'dump' => 0,
         'pass' => 0,
     );
-    private $givenValues = array();
-    private $originalLine;
-    private $originalValues = array();
 
-    /**
-     * Set a string line from an fstab file and parse it into "originalValues".
-     *
-     * @param string $content
-     *
-     * @return \Droid\Plugin\Fs\Model\Fstab\FstabLine
-     */
-    public function setContent($content)
+    public function getMappingValues()
     {
-        $this->originalLine = $content;
-        $this->parse();
-        return $this;
+        return array(
+            $this->getFieldValue('fileSystem'),
+            $this->getFieldValue('mountPoint'),
+        );
     }
 
     public function setFileSystem($fileSystem)
@@ -35,18 +28,8 @@ class FstabLine
                 'The "fileSystem" argument is not a non-empty string.'
             );
         }
-        $this->setValue('fileSystem', $fileSystem);
+        $this->setFieldValue('fileSystem', $fileSystem);
         return $this;
-    }
-
-    public function getFileSystem()
-    {
-        if (array_key_exists('fileSystem', $this->givenValues)) {
-            return $this->givenValues['fileSystem'];
-        } elseif (array_key_exists('fileSystem', $this->originalValues)) {
-            return $this->originalValues['fileSystem'];
-        }
-        return null;
     }
 
     public function setMountPoint($mountPoint)
@@ -56,18 +39,8 @@ class FstabLine
                 'The "mountPoint" argument is not a non-empty string.'
             );
         }
-        $this->setValue('mountPoint', $mountPoint);
+        $this->setFieldValue('mountPoint', $mountPoint);
         return $this;
-    }
-
-    public function getMountPoint()
-    {
-        if (array_key_exists('mountPoint', $this->givenValues)) {
-            return $this->givenValues['mountPoint'];
-        } elseif (array_key_exists('mountPoint', $this->originalValues)) {
-            return $this->originalValues['mountPoint'];
-        }
-        return null;
     }
 
     public function setFileSystemType($fileSystemType)
@@ -77,7 +50,7 @@ class FstabLine
                 'The "fileSystemType" argument is not a non-empty string.'
             );
         }
-        $this->setValue('fileSystemType', $fileSystemType);
+        $this->setFieldValue('fileSystemType', $fileSystemType);
         return $this;
     }
 
@@ -88,7 +61,7 @@ class FstabLine
                 'The "options" argument is not a non-empty string.'
             );
         }
-        $this->setValue('options', $options);
+        $this->setFieldValue('options', $options);
         return $this;
     }
 
@@ -99,7 +72,7 @@ class FstabLine
                 'The "dump" argument is not a numeric value.'
             );
         }
-        $this->setValue('dump', $dump);
+        $this->setFieldValue('dump', $dump);
         return $this;
     }
 
@@ -110,76 +83,51 @@ class FstabLine
                 'The "pass" argument is not a numeric value.'
             );
         }
-        $this->setValue('pass', $pass);
+        $this->setFieldValue('pass', $pass);
         return $this;
     }
 
-    public function __toString()
-    {
-        if ($this->originalValues && $this->givenValues) {
-            # an updated line
-            return implode(
-                ' ',
-                array_values(
-                    array_replace($this->originalValues, $this->givenValues)
-                )
-            );
-        } elseif ($this->originalValues || $this->originalLine) {
-            # an unchanged line
-            return $this->originalLine;
-        } elseif ($this->givenValues) {
-            # a new line
-            return implode(' ', array_values($this->givenValues));
-        }
-        return '';
-    }
-
     /**
-     * Determine whether this instance represents an fstab line which was parsed
-     * into a set of filesystem info values.
+     * Set the value of a named field.
      *
-     * @return boolean
+     * This implementation allows for fields which have an implied value when
+     * not given an explicit value. Thus,
+     * @see \Droid\Plugin\Fs\Model\File\AbstractLine::setFieldValue()
      */
-    public function isParsedFileSystemInfo()
+    public function setFieldValue($fieldName, $value)
     {
-        return (bool) sizeof($this->originalValues);
+        if (isset($this->originalValues[$fieldName])
+            && $this->originalValues[$fieldName] === $value
+        ) {
+            # the given value is the same as the original value;
+            # ignore any given value
+            unset($this->givenValues[$fieldName]);
+        } elseif (isset($this->originalValues[$fieldName])
+            && $this->originalValues[$fieldName] !== $value
+            && isset($this->defaults[$fieldName])
+            && $this->defaults[$fieldName] === $value
+        ) {
+            # the given value is the same as a default value, but different from
+            # the original value; change it
+            $this->givenValues[$fieldName] = $value;
+        } elseif (isset($this->defaults[$fieldName])
+            && $this->defaults[$fieldName] === $value
+        ) {
+            # the given value is the same as the default value;
+            # ignore any given value
+            unset($this->givenValues[$fieldName]);
+        } else {
+            $this->givenValues[$fieldName] = $value;
+        }
+        return $this;
     }
 
-    /**
-     * Determine whether this instance started as a parsed fstab line and has
-     * since had one or more of its values changed.
-     *
-     * @return boolean
-     */
-    public function changed()
+    protected function parse($data)
     {
-        if (empty($this->originalValues)) {
-            return false;
-        }
-        return (bool) sizeof($this->givenValues);
-    }
-
-    private function parse()
-    {
-        if (trim($this->originalLine, " \t") == '') {
-            return;
-        }
-        if (substr($this->originalLine, 0, 1) == '#') {
-            return;
-        }
-
-        // Normalise horizontal whitespace to single tabs
-        $line = str_replace(' ', "\t", trim($this->originalLine, " \t"));
-        while (true) {
-            $prev = $line;
-            $line = str_replace("\t\t", "\t", $line);
-            if ($line === $prev) {
-                break;
-            }
-        }
+        $parsed = array();
 
         // Split into parts
-        $parts = explode("\t", $line);
+        $parts = explode("\t", $this->normaliseWhitespace($data));
         if (sizeof($parts) < 4) {
             throw new FstabException(
                 sprintf(
@@ -189,10 +137,10 @@ class FstabLine
             );
         }
 
-        $this->originalValues['fileSystem'] = $parts[0];
-        $this->originalValues['mountPoint'] = $parts[1];
-        $this->originalValues['fileSystemType'] = $parts[2];
-        $this->originalValues['options'] = $parts[3];
+        $parsed['fileSystem'] = $parts[0];
+        $parsed['mountPoint'] = $parts[1];
+        $parsed['fileSystemType'] = $parts[2];
+        $parsed['options'] = $parts[3];
 
         if (array_key_exists(4, $parts)) {
             if (! is_numeric($parts[4])) {
@@ -203,7 +151,7 @@ class FstabLine
                     )
                 );
             }
-            $this->originalValues['dump'] = (int) $parts[4];
+            $parsed['dump'] = (int) $parts[4];
         }
         if (array_key_exists(5, $parts)) {
             if (! is_numeric($parts[5])) {
@@ -214,31 +162,22 @@ class FstabLine
                     )
                 );
             }
-            $this->originalValues['pass'] = (int) $parts[5];
+            $parsed['pass'] = (int) $parts[5];
         }
+
+        return $parsed;
     }
 
-    private function setValue($name, $value)
+    protected function normaliseWhitespace($data)
     {
-        if (isset($this->originalValues[$name])
-            && $this->originalValues[$name] === $value
-        ) {
-            # the given value is the same as the original value; ignore any given value
-            unset($this->givenValues[$name]);
-        } elseif (isset($this->originalValues[$name])
-            && $this->originalValues[$name] !== $value
-            && isset($this->defaults[$name])
-            && $this->defaults[$name] === $value
-        ) {
-            # the given value is the same as a default value, but different from the original value; change it
-            $this->givenValues[$name] = $value;
-        } elseif (isset($this->defaults[$name])
-            && $this->defaults[$name] === $value
-        ) {
-            # the given value is the same as the default value; ignore any given value
-            unset($this->givenValues[$name]);
-        } else {
-            $this->givenValues[$name] = $value;
+        $data = str_replace(' ', "\t", trim($data, " \t"));
+        while (true) {
+            $prev = $data;
+            $data = str_replace("\t\t", "\t", $data);
+            if ($data === $prev) {
+                break;
+            }
         }
+        return $data;
     }
 }

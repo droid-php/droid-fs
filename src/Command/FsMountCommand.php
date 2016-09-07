@@ -10,23 +10,23 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use Droid\Plugin\Fs\Model\File\FileFactory;
 use Droid\Plugin\Fs\Model\FsMount;
-use Droid\Plugin\Fs\Model\Fstab\FstabBuilder;
 use Droid\Plugin\Fs\Model\Fstab\FstabException;
 
 class FsMountCommand extends Command
 {
     use CheckableTrait;
 
-    protected $fstabBuilder;
+    protected $fileFactory;
     protected $fsMount;
 
     public function __construct(
-        FstabBuilder $fstabBuilder,
+        FileFactory $fileFactory,
         FsMount $fsMount,
         $name = null
     ) {
-        $this->fstabBuilder = $fstabBuilder;
+        $this->fileFactory = $fileFactory;
         $this->fsMount = $fsMount;
         return parent::__construct($name);
     }
@@ -91,8 +91,8 @@ class FsMountCommand extends Command
         $this->activateCheckMode($input);
 
         $fstab = $this
-            ->fstabBuilder
-            ->buildFstab($input->getOption('fstab'))
+            ->fileFactory
+            ->makeFile($input->getOption('fstab'))
         ;
         try {
             $fstab->addEntry(

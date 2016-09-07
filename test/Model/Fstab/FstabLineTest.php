@@ -1,6 +1,6 @@
 <?php
 
-namespace Droid\Test\Plugin\Model\Fstab;
+namespace Droid\Test\Plugin\Fs\Model\Fstab;
 
 use PHPUnit_Framework_TestCase;
 
@@ -9,30 +9,39 @@ use Droid\Plugin\Fs\Model\Fstab\FstabLine;
 class FstabLineTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setContent
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFileSystem
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setMountPoint
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFileSystemType
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setOptions
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setDump
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setPass
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setValue
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::changed
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::getMappingValues
      */
-    public function testChangedWithValuesEqualToOriginalsWillReturnFalse()
+    public function testGetMappingValuesWillReturnValuesOfFilesystemAndMountpointFields()
     {
         $line = new FstabLine;
 
-        $line->setContent('/dev/sda1 /mnt/point ext3 rw 1 2');
         $line
-            ->setFileSystem('/dev/sda1')
-            ->setMountPoint('/mnt/point')
-            ->setFileSystemType('ext3')
-            ->setOptions('rw')
-            ->setDump(1)
-            ->setPass(2)
+            ->setFieldValue('fileSystem', '/dev/sda1')
+            ->setFieldValue('mountPoint', '/mnt/point')
         ;
+
+        $this->assertSame(
+            array('/dev/sda1', '/mnt/point'),
+            $line->getMappingValues()
+        );
+    }
+
+    /**
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFieldValue
+     */
+    public function testSetFieldValueWithValuesEqualToOriginalsWillNotChangeValue()
+    {
+        $line = new FstabLine;
+
+        $line
+            ->set('/dev/sda1 /mnt/point ext3 rw 1 2')
+            ->setFieldValue('fileSystem', '/dev/sda1')
+        ;
+
+        $this->assertSame(
+            '/dev/sda1',
+            $line->getFieldValue('fileSystem')
+        );
 
         $this->assertFalse(
             $line->changed(),
@@ -41,30 +50,21 @@ class FstabLineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setContent
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFileSystem
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setMountPoint
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFileSystemType
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setOptions
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setDump
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setPass
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setValue
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::changed
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFieldValue
      */
-    public function testChangedWitValueshDifferentFromOriginalsWillReturnTrue()
+    public function testSetFieldValueWitValueshDifferentFromOriginalsWillChangeValue()
     {
         $line = new FstabLine;
 
-        $line->setContent('/dev/sda1 /mnt/point ext3 rw 1 2');
         $line
-            ->setFileSystem('/dev/sda1')
-            ->setMountPoint('/mnt/foo')
-            ->setFileSystemType('nfs')
-            ->setOptions('ro')
-            ->setDump(2)
-            ->setPass(1)
+            ->set('/dev/sda1 /mnt/point ext3 rw 1 2')
+            ->setFieldValue('fileSystem', '/dev/sdb2')
         ;
+
+        $this->assertSame(
+            '/dev/sdb2',
+            $line->getFieldValue('fileSystem')
+        );
 
         $this->assertTrue(
             $line->changed(),
@@ -73,22 +73,21 @@ class FstabLineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setContent
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setDump
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setPass
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setValue
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::changed
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFieldValue
      */
-    public function testChangedWithValuesEqualToOriginalsAndDefaultsWillReturnFalse()
+    public function testSetFieldValueWithValuesEqualToOriginalsAndDefaultsWillNotChangeValue()
     {
         $line = new FstabLine;
 
-        $line->setContent('/dev/sda1 /mnt/point ext3 rw 0 0');
         $line
-            ->setDump(0)
-            ->setPass(0)
+            ->set('/dev/sda1 /mnt/point ext3 rw 0 0')
+            ->setFieldValue('dump', 0)
         ;
+
+        $this->assertSame(
+            0,
+            $line->getFieldValue('dump')
+        );
 
         $this->assertFalse(
             $line->changed(),
@@ -97,22 +96,21 @@ class FstabLineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setContent
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setDump
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setPass
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setValue
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::changed
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFieldValue
      */
-    public function testChangedWithValuesDifferentFromOriginalsAndEqualToDefaultsWillReturnTrue()
+    public function testSetFieldValueWithValuesDifferentFromOriginalsAndEqualToDefaultsWillChangeValue()
     {
         $line = new FstabLine;
 
-        $line->setContent('/dev/sda1 /mnt/point ext3 rw 1 1');
         $line
-            ->setDump(0)
-            ->setPass(0)
+            ->set('/dev/sda1 /mnt/point ext3 rw 1 1')
+            ->setFieldValue('pass', 0)
         ;
+
+        $this->assertSame(
+            0,
+            $line->getFieldValue('pass')
+        );
 
         $this->assertTrue(
             $line->changed(),
@@ -121,82 +119,22 @@ class FstabLineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setContent
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setDump
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setPass
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setValue
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::changed
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFieldValue
      */
-    public function testChangedWithValuesEqualToDefaultsAndUnsetOriginalsWillReturnFalse()
+    public function testSetFieldValueWithValuesEqualToDefaultsAndUnsetOriginalsWillNotSetValue()
     {
         $line = new FstabLine;
 
-        $line->setContent('/dev/sda1 /mnt/point ext3 rw');
         $line
-            ->setDump(0)
-            ->setPass(0)
+            ->set('/dev/sda1 /mnt/point ext3 rw')
+            ->setFieldValue('dump', 0)
         ;
+
+        $this->assertNull($line->getFieldValue('dump'));
 
         $this->assertFalse(
             $line->changed(),
             'No change when original optional values are unset and the given values equal the defaults.'
-        );
-    }
-
-    /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::changed
-     */
-    public function testChangedWithZeroOriginalValuesWillReturnFalse()
-    {
-        $line = new FstabLine;
-
-        $this->assertFalse(
-            $line->setFileSystem('/dev/sda1')->changed(),
-            'No change when setContent was never called.'
-        );
-    }
-
-    /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setContent
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::changed
-     */
-    public function testChangedWithNonFilesystemOriginalLinesWillReturnFalse()
-    {
-        $line = new FstabLine;
-
-        $this->assertFalse(
-            $line->setContent('')->setFileSystem('/dev/sda1')->changed(),
-            'No change when original line was an empty line.'
-        );
-
-        $this->assertFalse(
-            $line->setContent('# A comment')->setFileSystem('/dev/sda1')->changed(),
-            'No change when original optional line was a comment line.'
-        );
-    }
-
-    /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::isParsedFileSystemInfo
-     */
-    public function testIsParsedFileSystemInfo()
-    {
-        $line = new FstabLine;
-
-        $this->assertFalse(
-            $line->setFileSystem('/dev/sda1')->isParsedFileSystemInfo(),
-            'Is not "parsed filesystem info" if there was no parsed filesystem line.'
-        );
-
-        $this->assertFalse(
-            $line->setContent('')->isParsedFileSystemInfo(),
-            'Is not "parsed filesystem info" if the original line was not a filesystem line.'
-        );
-
-        $this->assertTrue(
-            $line->setContent('/dev/sda1 /mnt/point1 ext3 rw')->isParsedFileSystemInfo(),
-            'Is "parsed filesystem info" when a filesystem info line was parsed.'
         );
     }
 
@@ -212,7 +150,7 @@ class FstabLineTest extends PHPUnit_Framework_TestCase
      * @param mixed $value
      * @param string $exceptionMessage
      */
-    public function testMutatorWithInvalidValueThrowsException(
+    public function testMutatorWithInvalidValueWillThrowException(
         $mutator,
         $value,
         $exceptionMessage
@@ -294,13 +232,80 @@ class FstabLineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @dataProvider provideValidValues
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFileSystem
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setMountPoint
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setFileSystemType
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setOptions
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setDump
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setPass
+     * @param string $mutator
+     * @param mixed $value
+     * @param string $fieldName
+     */
+    public function testMutatorWithValidValueWillSetValue(
+        $mutator,
+        $value,
+        $fieldName
+    ) {
+        $line = new FstabLine;
+
+        $line
+            ->set('/dev/sda1 /mnt/point1 ext3 rw 1 2')
+            ->$mutator($value)
+        ;
+
+        $this->assertSame(
+            $value,
+            $line->getFieldValue($fieldName),
+            'Original line is modified.'
+        );
+    }
+
+    public function provideValidValues()
+    {
+        return array(
+            'Valid value for fileSystem' => array(
+                'setFileSystem',
+                '/dev/sda2',
+                'fileSystem',
+            ),
+            'Valid value for mountPoint' => array(
+                'setMountPoint',
+                '/mnt/point2',
+                'mountPoint',
+            ),
+            'Valid value for fileSystemType' => array(
+                'setFileSystemType',
+                'nfs',
+                'fileSystemType',
+            ),
+            'Valid value for options' => array(
+                'setOptions',
+                'ro',
+                'options',
+            ),
+            'Valid value for dump' => array(
+                'setDump',
+                0,
+                'dump',
+            ),
+            'Valid value for pass' => array(
+                'setPass',
+                0,
+                'pass',
+            ),
+        );
+    }
+
+    /**
      * @dataProvider provideInvalidOriginalLines
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setContent
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::set
      * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::parse
      * @param string $originalLine
      * @param string $exceptionMessage
      */
-    public function testSetContentWithInvalidOriginalLineThrowsException(
+    public function testSetWithInvalidOriginalLineWillThrowException(
         $originalLine,
         $exceptionMessage
     ) {
@@ -311,14 +316,14 @@ class FstabLineTest extends PHPUnit_Framework_TestCase
             $exceptionMessage
         );
 
-        $line->setContent($originalLine);
+        $line->set($originalLine);
     }
 
     public function provideInvalidOriginalLines()
     {
         return array(
             'Insufficient fields' => array(
-                '/dev/sda1 /mnt/point1 ext3       ',
+                '/dev/sda1 /mnt/point1 ext3',
                 'Expected a well-formed line (of 4 or more fields)'
             ),
             'Non-numeric dump value' => array(
@@ -333,224 +338,57 @@ class FstabLineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::__toString
-     */
-    public function testToStringReturnsEmptyString()
-    {
-        $line = new FstabLine;
-
-        $this->assertSame(
-            '',
-            (string) $line,
-            'An unused line is an empty string.'
-        );
-    }
-
-    /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::__toString
-     */
-    public function testToStringWithOnlyGivenValuesReturnsNewLine()
-    {
-        $expectedValues = array(
-            '/dev/sda1',
-            '/mnt/point1',
-            'ext3',
-            'rw',
-        );
-
-        $line = new FstabLine;
-
-        $line
-            ->setFileSystem($expectedValues[0])
-            ->setMountPoint($expectedValues[1])
-            ->setFileSystemType($expectedValues[2])
-            ->setOptions($expectedValues[3])
-        ;
-
-        $this->assertSame(
-            implode(' ', $expectedValues),
-            (string) $line,
-            'A line of only given values is a new line made up of only given values.'
-        );
-    }
-
-    /**
      * @dataProvider provideValidOriginalLines
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::setContent
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::set
      * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::__toString
+     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::normaliseWhitespace
      * @param string $originalLine
+     * @param string $exceptionMessage
      */
-    public function testToStringWithoutMutationReturnsUnchangedOriginalLine($originalLine)
-    {
+    public function testSetWithValidOriginalLineWillParseCorrectly(
+        $originalLine,
+        $expectedValues
+    ) {
         $line = new FstabLine;
 
+        $line->set($originalLine);
+
         $this->assertSame(
-            $originalLine,
-            (string) $line->setContent($originalLine),
-            'Original line is returned unchanged.'
+            $expectedValues,
+            array(
+                $line->getFieldValue('fileSystem'),
+                $line->getFieldValue('mountPoint'),
+                $line->getFieldValue('fileSystemType'),
+                $line->getFieldValue('options'),
+                $line->getFieldValue('dump'),
+                $line->getFieldValue('pass'),
+            )
         );
     }
 
     public function provideValidOriginalLines()
     {
         return array(
-            'Empty line' => array(''),
-            'Comment line' => array('# No comment. Erm, sorry: this is a comment.'),
-            'Filesystem line' => array('/dev/sda1 /mnt/point1 ext3 rw'),
-            'Complete Filesystem line' => array('/dev/sda1 /mnt/point1 ext3 rw 1 2'),
-        );
-    }
-
-    /**
-     * @dataProvider provideMutatedLines
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::__toString
-     * @param string $originalLine
-     * @param string $mutator
-     * @param mixed $value
-     * @param string $expectedLine
-     */
-    public function testToStringWithMutationReturnsModifiedOriginalLine(
-        $originalLine,
-        $mutator,
-        $value,
-        $expectedLine
-    ) {
-        $line = new FstabLine;
-
-        $this->assertSame(
-            $expectedLine,
-            (string) $line->setContent($originalLine)->$mutator($value),
-            'Original line is modified.'
-        );
-    }
-
-    public function provideMutatedLines()
-    {
-        return array(
-            'Non-string fs' => array(
-                '/dev/sda1  /mnt/point1 ext3 rw 1 2',
-                'setFileSystem',
-                '/dev/sda2',
-                '/dev/sda2 /mnt/point1 ext3 rw 1 2',
+            'Sufficient fields' => array(
+                '/dev/sda1 /mnt/point1 ext3 rw',
+                array('/dev/sda1', '/mnt/point1', 'ext3', 'rw', null, null)
             ),
-            'Non-string mount point' => array(
-                '/dev/sda1 /mnt/point1 ext3 rw 1 2',
-                'setMountPoint',
-                '/mnt/point2',
-                '/dev/sda1 /mnt/point2 ext3 rw 1 2',
+            'Sufficient fields and dump' => array(
+                '/dev/sda1 /mnt/point1 ext3 rw 1',
+                array('/dev/sda1', '/mnt/point1', 'ext3', 'rw', 1, null)
             ),
-            'Non-string fs type' => array(
-                '/dev/sda1 /mnt/point1 ext3 rw 1 2',
-                'setFileSystemType',
-                'nfs',
-                '/dev/sda1 /mnt/point1 nfs rw 1 2',
+            'All fields' => array(
+                '/dev/sda1 /mnt/point1 ext3 rw 1 1',
+                array('/dev/sda1', '/mnt/point1', 'ext3', 'rw', 1, 1)
             ),
-            'Non-string options' => array(
-                '/dev/sda1 /mnt/point1 ext3 rw 1 2',
-                'setOptions',
-                'ro',
-                '/dev/sda1 /mnt/point1 ext3 ro 1 2',
+            'Mixed whitespace' => array(
+                "/dev/sda1\t/mnt/point1 ext3 rw",
+                array('/dev/sda1', '/mnt/point1', 'ext3', 'rw', null, null)
             ),
-            'Empty string dump' => array(
-                '/dev/sda1 /mnt/point1 ext3 rw 1 2',
-                'setDump',
-                0,
-                '/dev/sda1 /mnt/point1 ext3 rw 0 2',
+            'Much whitespace' => array(
+                "/dev/sda1\t\t\t/mnt/point1      ext3  \t\t  rw       ",
+                array('/dev/sda1', '/mnt/point1', 'ext3', 'rw', null, null)
             ),
-            'Empty string pass' => array(
-                '/dev/sda1 /mnt/point1 ext3 rw 1 2',
-                'setPass',
-                0,
-                '/dev/sda1 /mnt/point1 ext3 rw 1 0',
-            ),
-        );
-    }
-
-    /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::getFileSystem
-     */
-    public function testGetFileSystemWithoutGivenOrOriginalValuesWillReturnNull()
-    {
-        $line = new FstabLine;
-
-        $this->assertNull(
-            $line->getFileSystem(),
-            'getFileSystem returns null without a parsed line or a given value for fileSystem.'
-        );
-    }
-
-    /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::getFileSystem
-     */
-    public function testGetFileSystemWithoutGivenValueWillReturnOriginalValue()
-    {
-        $line = new FstabLine;
-
-        $this->assertSame(
-            '/dev/sda1',
-            $line->setContent('/dev/sda1 /mnt/point1 ext3 rw')->getFileSystem(),
-            'getFileSystem returns the original value when there is no value given for fileSystem.'
-        );
-    }
-
-    /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::getFileSystem
-     */
-    public function testGetFileSystemWithGivenValueWillReturnGivenValue()
-    {
-        $line = new FstabLine;
-
-        $line->setContent('/dev/sda1 /mnt/point1 ext3 rw');
-
-        $this->assertSame(
-            '/dev/sda2',
-            $line->setFileSystem('/dev/sda2')->getFileSystem(),
-            'getFileSystem returns the value given for fileSystem.'
-        );
-    }
-
-    /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::getMountPoint
-     */
-    public function testGetMountPointWithoutGivenOrOriginalValuesWillReturnNull()
-    {
-        $line = new FstabLine;
-
-        $this->assertNull(
-            $line->getMountPoint(),
-            'getFileSystem returns null without a parsed line or a given value for mountPoint.'
-        );
-    }
-
-    /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::getMountPoint
-     */
-    public function testGetMountPointmWithoutGivenValueWillReturnOriginalValue()
-    {
-        $line = new FstabLine;
-
-        $this->assertSame(
-            '/mnt/point1',
-            $line->setContent('/dev/sda1 /mnt/point1 ext3 rw')->getMountPoint(),
-            'getFileSystem returns the original value when there is no value given for mountPoint.'
-        );
-    }
-
-    /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstabline::getMountPoint
-     */
-    public function testGetMountPointmWithGivenValueWillReturnGivenValue()
-    {
-        $line = new FstabLine;
-
-        $line->setContent('/dev/sda1 /mnt/point1 ext3 rw');
-
-        $this->assertSame(
-            '/mnt/point2',
-            $line->setMountPoint('/mnt/point2')->getMountPoint(),
-            'getFileSystem returns the value given for mountPoint.'
         );
     }
 }

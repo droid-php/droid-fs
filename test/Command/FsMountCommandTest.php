@@ -10,20 +10,20 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
 use Droid\Plugin\Fs\Command\FsMountCommand;
+use Droid\Plugin\Fs\Model\File\FileFactory;
+use Droid\Plugin\Fs\Model\File\LineFactory;
 use Droid\Plugin\Fs\Model\Fstab\Fstab;
-use Droid\Plugin\Fs\Model\Fstab\FstabBuilder;
 use Droid\Plugin\Fs\Model\Fstab\FstabException;
-use Droid\Plugin\Fs\Model\Fstab\FstabLineFactory;
 use Droid\Plugin\Fs\Model\FsMount;
 
 class FsMountCommandTest extends PHPUnit_Framework_TestCase
 {
     protected $app;
+    protected $fileFactory;
     protected $fsMount;
     protected $fstab;
-    protected $fstabBuilder;
     protected $fstabFile;
-    protected $fstabLineFac;
+    protected $lineFac;
     protected $tester;
     protected $vfs;
 
@@ -34,23 +34,24 @@ class FsMountCommandTest extends PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $this->fstabLineFac = $this
-            ->getMockBuilder(FstabLineFactory::class)
+        $this->lineFac = $this
+            ->getMockBuilder(LineFactory::class)
+            ->disableOriginalConstructor()
             ->getMock()
         ;
-        $this->fstabBiulder = $this
-            ->getMockBuilder(FstabBuilder::class)
-            ->setConstructorArgs(array($this->fstabLineFac))
+        $this->fileFactory = $this
+            ->getMockBuilder(FileFactory::class)
+            ->setConstructorArgs(array(Fstab::class, $this->lineFac))
             ->getMock()
         ;
         $this->fstab = $this->getMockForFstab();
         $this
-            ->fstabBiulder
-            ->method('buildFstab')
+            ->fileFactory
+            ->method('makeFile')
             ->willReturn($this->fstab)
         ;
 
-        $command = new FsMountCommand($this->fstabBiulder, $this->fsMount);
+        $command = new FsMountCommand($this->fileFactory, $this->fsMount);
 
         $this->app = new Application;
         $this->app->add($command);
@@ -287,14 +288,14 @@ class FsMountCommandTest extends PHPUnit_Framework_TestCase
             ->fsMount
             ->expects($this->once())
             ->method('mounted')
-            ->with('/mnt/point')
+            ->with($this->equalTo('/mnt/point'))
             ->willReturn(true)
         ;
         $this
             ->fsMount
             ->expects($this->once())
             ->method('umount')
-            ->with('/mnt/point')
+            ->with($this->equalTo('/mnt/point'))
             ->willReturn(true)
         ;
 
@@ -324,21 +325,21 @@ class FsMountCommandTest extends PHPUnit_Framework_TestCase
             ->fsMount
             ->expects($this->once())
             ->method('mounted')
-            ->with('/mnt/point')
+            ->with($this->equalTo('/mnt/point'))
             ->willReturn(true)
         ;
         $this
             ->fsMount
             ->expects($this->once())
             ->method('umount')
-            ->with('/mnt/point')
+            ->with($this->equalTo('/mnt/point'))
             ->willReturn(true)
         ;
         $this
             ->fsMount
             ->expects($this->once())
             ->method('mount')
-            ->with('/mnt/point')
+            ->with($this->equalTo('/mnt/point'))
             ->willReturn(true)
         ;
 

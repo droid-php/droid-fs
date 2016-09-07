@@ -81,7 +81,7 @@ class FsMountTest extends PHPUnit_Framework_TestCase
             ->processBuilder
             ->expects($this->once())
             ->method('setArguments')
-            ->with(array('mountpoint', '-q', '/mnt/point'))
+            ->with($this->equalTo(array('mountpoint', '-q', '/mnt/point')))
         ;
 
         $fsMount->mounted('/mnt/point');
@@ -119,7 +119,7 @@ class FsMountTest extends PHPUnit_Framework_TestCase
             ->processBuilder
             ->expects($this->once())
             ->method('setArguments')
-            ->with(array('mount', '/mnt/point'))
+            ->with($this->equalTo(array('mount', '/mnt/point')))
         ;
 
         $fsMount->mount('/mnt/point');
@@ -173,7 +173,7 @@ class FsMountTest extends PHPUnit_Framework_TestCase
             ->processBuilder
             ->expects($this->once())
             ->method('setArguments')
-            ->with(array('umount', '/mnt/point'))
+            ->with($this->equalTo(array('umount', '/mnt/point')))
         ;
 
         $fsMount->umount('/mnt/point');

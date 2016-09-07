@@ -152,7 +152,7 @@ class Fstab
 
         $backup = new SplFileObject($filename, 'wb');
         $backup->fwrite(
-            $this->file->fread($this->file->getSize()),
+            file_get_contents($this->file->getPathname()),
             $this->file->getSize()
         );
         $backup->fflush();

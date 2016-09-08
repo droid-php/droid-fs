@@ -27,9 +27,9 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
      * @expectedException \Droid\Plugin\Fs\Model\File\UnusableFileException
      * @expectedExceptionMessage Expected the file to be readable
      *
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::__construct
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::setLine
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::open
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::__construct
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::setLine
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::open
      */
     public function testAddEntryWithUnreadableFstabFileWillThrowException()
     {
@@ -45,8 +45,8 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
      * @expectedException \Droid\Plugin\Fs\Model\File\UnusableFileException
      * @expectedExceptionMessage Expected the file to be writeable
      *
-     *@covers \Droid\Plugin\Fs\Model\Fstab\Fstab::setLine
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::open
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::setLine
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::open
      */
     public function testAddEntryWithUnwritableFstabFileWillThrowException()
     {
@@ -62,8 +62,8 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
      * @expectedException \Droid\Plugin\Fs\Model\File\UnusableFileException
      * @expectedExceptionMessage Expected the file to be well formed
      *
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::setLine
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::parse
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::setLine
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::parse
      */
     public function testAddEntryWithUnparseableFstabWillThrowFstabException()
     {
@@ -85,8 +85,8 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::backup
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::open
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::backup
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::open
      */
     public function testBackupWithChangedFstabWillWriteOriginalFstabToBackup()
     {
@@ -137,10 +137,10 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::setLine
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::changed
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::finish
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::setLine
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::parse
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::changed
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::finish
      */
     public function testAddEntryWithEmptyFstabAndNewLineWillAppendNewLine()
     {
@@ -183,11 +183,11 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::setLine
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::open
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::changed
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::finish
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::setLine
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::open
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::parse
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::changed
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::finish
      */
     public function testAddEntryWithEmptyFstabAndTwoNewLinesWillAppendTwoNewLines()
     {
@@ -235,10 +235,10 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::setLine
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::changed
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::finish
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::setLine
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::parse
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::changed
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::finish
      */
     public function testAddEntryWithNonEmptyFstabAndNewLineWillAppendNewLine()
     {
@@ -295,10 +295,10 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::setLine
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::changed
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::finish
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::setLine
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::parse
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::changed
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::finish
      */
     public function testAddEntryWithExistingLineWillDoNothing()
     {
@@ -357,10 +357,10 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::setLine
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::changed
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::finish
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::setLine
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::parse
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::changed
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::finish
      */
     public function testAddEntryWithUpdateToExistingLineWillUpdateLine()
     {
@@ -425,10 +425,10 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::setLine
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::changed
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::finish
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::setLine
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::parse
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::changed
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::finish
      */
     public function testAddEntryWillUpdateLineAndAppendLine()
     {
@@ -494,10 +494,10 @@ class LineBasedFileTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::setLine
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::parse
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::changed
-     * @covers \Droid\Plugin\Fs\Model\Fstab\Fstab::finish
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::setLine
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::parse
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::changed
+     * @covers \Droid\Plugin\Fs\Model\File\LineBasedFile::finish
      */
     public function testAddEntryWithTwoCancellingUpdatesToExistingLineWillDoNothing()
     {

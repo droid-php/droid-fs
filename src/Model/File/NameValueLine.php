@@ -30,7 +30,7 @@ class NameValueLine extends AbstractLine
             $this->normaliseWhitespace($this->fieldSeparator),
             $this->normaliseWhitespace(trim($data, " \t"))
         );
-        if (sizeof($parts) != 2) {
+        if (sizeof($parts) < 2) {
             throw new DomainException(
                 sprintf(
                     'Expected a well-formed line of two fields "name%svalue", got: "%s".',
@@ -40,8 +40,13 @@ class NameValueLine extends AbstractLine
             );
         }
 
-        $parsed[self::FIELD_NAME] = $parts[0];
-        $parsed[self::FIELD_VALUE] = $parts[1];
+        $parsed[self::FIELD_NAME] = array_shift($parts);
+
+        $value = implode($this->fieldSeparator, $parts);
+        if (substr($value, 0, 1) === '"' && substr($value, -1) === '"') {
+            $value = substr($value, 1, -1);
+        }
+        $parsed[self::FIELD_VALUE] = $value;
 
         return $parsed;
     }

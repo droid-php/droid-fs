@@ -63,11 +63,6 @@ class NameValueLineTest extends PHPUnit_Framework_TestCase
                 'SomeOptionName SomeValue',
                 'Expected a well-formed line of two fields "name=value"'
             ),
-            'Surplus fields' => array(
-                ' ',
-                'SomeOptionName SomeValue SomeOtherValue',
-                'Expected a well-formed line of two fields "name value"'
-            ),
         );
     }
 
@@ -138,6 +133,46 @@ class NameValueLineTest extends PHPUnit_Framework_TestCase
                 "SomeOption\t\t \t\t=          \t        SomeValue",
                 array('SomeOption', 'SomeValue')
             ),
+            'Leading white space is stripped' => array(
+                ' ',
+                '         SomeOption SomeValue',
+                array('SomeOption', 'SomeValue')
+            ),
+            'Trailing white space is stripped' => array(
+                ' ',
+                'SomeOption SomeValue         ',
+                array('SomeOption', 'SomeValue')
+            ),
+            'Space separated value (e.g. SSH AcceptEnv) is legal' => array(
+                ' ',
+                'SomeOption Some Values',
+                array('SomeOption', 'Some Values')
+            ),
+            'White space is permitted within a double quoted value' => array(
+                ' ',
+                'SomeOption "Some Value"',
+                array('SomeOption', 'Some Value')
+            ),
+            'White space within a quoted value IS NOT preserved exactly' => array(
+                ' ',
+                "SomeOption \"  Some \t Value  \"",
+                array('SomeOption', ' Some Value ')
+            ),
+            'Improperly double-quoted value' => array(
+                ' ',
+                'SomeOption "Some Value',
+                array('SomeOption', '"Some Value')
+            ),
+            'Another improperly double-quoted value' => array(
+                ' ',
+                'SomeOption Some Value"',
+                array('SomeOption', 'Some Value"')
+            ),
+            'Another improperly quoted value' => array(
+                ' ',
+                'SomeOption \'Some Value\'',
+                array('SomeOption', '\'Some Value\'')
+            )
         );
     }
 }

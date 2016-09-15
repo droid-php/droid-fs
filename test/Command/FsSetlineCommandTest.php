@@ -10,11 +10,11 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
 use Droid\Plugin\Fs\Command\FsSetlineCommand;
-use Droid\Plugin\Fs\Model\File\FileFactory;
-use Droid\Plugin\Fs\Model\File\LineBasedFileInterface;
-use Droid\Plugin\Fs\Model\File\LineFactory;
-use Droid\Plugin\Fs\Model\File\LineInterface;
-use Droid\Plugin\Fs\Model\File\UnusableFileException;
+use Droid\Lib\Plugin\Model\File\FileFactory;
+use Droid\Lib\Plugin\Model\File\LineBasedFileInterface;
+use Droid\Lib\Plugin\Model\File\LineFactory;
+use Droid\Lib\Plugin\Model\File\LineInterface;
+use Droid\Lib\Plugin\Model\File\UnusableFileException;
 
 class FsSetlineCommandTest extends PHPUnit_Framework_TestCase
 {

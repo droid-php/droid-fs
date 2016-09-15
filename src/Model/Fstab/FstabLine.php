@@ -4,7 +4,7 @@ namespace Droid\Plugin\Fs\Model\Fstab;
 
 use InvalidArgumentException;
 
-use Droid\Plugin\Fs\Model\File\AbstractLine;
+use Droid\Lib\Plugin\Model\File\AbstractLine;
 
 class FstabLine extends AbstractLine
 {
@@ -92,7 +92,7 @@ class FstabLine extends AbstractLine
      *
      * This implementation allows for fields which have an implied value when
      * not given an explicit value. Thus,
-     * @see \Droid\Plugin\Fs\Model\File\AbstractLine::setFieldValue()
+     * @see \Droid\Lib\Plugin\Model\File\AbstractLine::setFieldValue()
      */
     public function setFieldValue($fieldName, $value)
     {

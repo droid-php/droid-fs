@@ -10,8 +10,8 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
 use Droid\Plugin\Fs\Command\FsMountCommand;
-use Droid\Plugin\Fs\Model\File\FileFactory;
-use Droid\Plugin\Fs\Model\File\LineFactory;
+use Droid\Lib\Plugin\Model\File\FileFactory;
+use Droid\Lib\Plugin\Model\File\LineFactory;
 use Droid\Plugin\Fs\Model\Fstab\Fstab;
 use Droid\Plugin\Fs\Model\Fstab\FstabException;
 use Droid\Plugin\Fs\Model\FsMount;

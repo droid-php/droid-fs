@@ -53,6 +53,12 @@ class FsSetlineCommand extends Command
                 InputOption::VALUE_REQUIRED,
                 'Characters which separate the name from the value in a (name, value) pair.'
             )
+            ->addOption(
+                '--compare-values',
+                'm',
+                InputOption::VALUE_NONE,
+                'Prevent duplicate lines as normal, but compare the contents of the "value" field instead of the "name" field.'
+            )
         ;
         $this->configureCheckMode();
     }
@@ -72,6 +78,13 @@ class FsSetlineCommand extends Command
                 ->fileFactory
                 ->getLineFactory()
                 ->setFieldSeparator($input->getOption('separator'))
+            ;
+        }
+        if ($input->getOption('compare-values')) {
+            $this
+                ->fileFactory
+                ->getLineFactory()
+                ->setMappingFields(array(NameValueLine::FIELD_VALUE))
             ;
         }
 

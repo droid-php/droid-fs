@@ -122,6 +122,13 @@ class FstabLine extends AbstractLine
         return $this;
     }
 
+    public function setMappingFields(array $fields)
+    {
+        # No Op
+
+        return $this;
+    }
+
     protected function parse($data)
     {
         $parsed = array();

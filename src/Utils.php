@@ -16,7 +16,7 @@ class Utils
                 break;
             case '~':
                 $home = getenv("HOME");
-                $path = $home . '/' . $path;
+                $path = $home . '/' . substr($path, 2);
                 break;
             default:
                 $path = getcwd() . '/' . $path;

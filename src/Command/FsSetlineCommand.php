@@ -13,6 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Droid\Lib\Plugin\Model\File\FileFactory;
 use Droid\Lib\Plugin\Model\File\NameValueLine;
 use Droid\Lib\Plugin\Model\File\UnusableFileException;
+use Droid\Plugin\Fs\Utils;
 
 class FsSetlineCommand extends Command
 {
@@ -67,9 +68,11 @@ class FsSetlineCommand extends Command
     {
         $this->activateCheckMode($input);
 
-        if (! file_exists($input->getArgument('file'))) {
+        $filepath = Utils::normalizePath($input->getArgument('file'));
+
+        if (! file_exists($filepath)) {
             throw new RuntimeException(
-                sprintf('The file "%s" does not exist.', $input->getArgument('file'))
+                sprintf('The file "%s" does not exist.', $filepath)
             );
         }
 
@@ -88,7 +91,7 @@ class FsSetlineCommand extends Command
             ;
         }
 
-        $file = $this->fileFactory->makeFile($input->getArgument('file'));
+        $file = $this->fileFactory->makeFile($filepath);
         $line = $this->fileFactory->getLineFactory()->makeLine();
 
         $line
@@ -116,7 +119,7 @@ class FsSetlineCommand extends Command
             $output->WriteLn(
                 sprintf(
                     'I am not making any changes to the file "%s"; it already has the line "%s%s%s".',
-                    $input->getArgument('file'),
+                    $filepath,
                     $input->getArgument('option-name'),
                     $this->fileFactory->getLineFactory()->getFieldSeparator(),
                     $input->getArgument('option-value')
@@ -129,7 +132,7 @@ class FsSetlineCommand extends Command
             $output->WriteLn(
                 sprintf(
                     'I would make a change to the file "%s".',
-                    $input->getArgument('file')
+                    $filepath
                 )
             );
             $this->reportChange($output);
@@ -140,11 +143,11 @@ class FsSetlineCommand extends Command
         $output->WriteLn(
             sprintf(
                 'I am making your changes to the file "%s".',
-                $input->getArgument('file')
+                $filepath
             )
         );
         $file
-            ->backup($this->backupName($input->getArgument('file')))
+            ->backup($this->backupName($filepath))
             ->finish()
         ;
         $this->reportChange($output);

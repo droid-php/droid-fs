@@ -2,8 +2,8 @@
 
 namespace Droid\Plugin\Fs\Model\Fstab;
 
-use Droid\Plugin\Fs\Model\File\LineBasedFile;
-use Droid\Plugin\Fs\Model\File\UnusableFileException;
+use Droid\Lib\Plugin\Model\File\LineBasedFile;
+use Droid\Lib\Plugin\Model\File\UnusableFileException;
 
 class Fstab extends LineBasedFile
 {

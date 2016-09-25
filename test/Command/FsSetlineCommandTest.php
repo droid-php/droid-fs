@@ -10,11 +10,12 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
 use Droid\Plugin\Fs\Command\FsSetlineCommand;
-use Droid\Plugin\Fs\Model\File\FileFactory;
-use Droid\Plugin\Fs\Model\File\LineBasedFileInterface;
-use Droid\Plugin\Fs\Model\File\LineFactory;
-use Droid\Plugin\Fs\Model\File\LineInterface;
-use Droid\Plugin\Fs\Model\File\UnusableFileException;
+use Droid\Lib\Plugin\Model\File\FileFactory;
+use Droid\Lib\Plugin\Model\File\LineBasedFileInterface;
+use Droid\Lib\Plugin\Model\File\LineFactory;
+use Droid\Lib\Plugin\Model\File\LineInterface;
+use Droid\Lib\Plugin\Model\File\NameValueLine;
+use Droid\Lib\Plugin\Model\File\UnusableFileException;
 
 class FsSetlineCommandTest extends PHPUnit_Framework_TestCase
 {
@@ -118,6 +119,30 @@ class FsSetlineCommandTest extends PHPUnit_Framework_TestCase
             'option-name' => 'some-name',
             'option-value' => 'some-value',
             '--separator' => ': '
+        ));
+    }
+
+    /**
+     * @covers \Droid\Plugin\Fs\Command\FsSetlineCommand::__construct
+     * @covers \Droid\Plugin\Fs\Command\FsSetlineCommand::execute
+     */
+    public function testCommandWithCompareValuesArgWillPrepareLineFactory()
+    {
+        $targetFile = vfsStream::newFile('some-file')->at($this->vfs);
+
+        $this
+            ->lineFac
+            ->expects($this->once())
+            ->method('setMappingFields')
+            ->with($this->equalTo(array(NameValueLine::FIELD_VALUE)))
+        ;
+
+        $this->tester->execute(array(
+            'command' => $this->app->find('fs:setline')->getName(),
+            'file' => $targetFile->url(),
+            'option-name' => 'some-name',
+            'option-value' => 'some-value',
+            '--compare-values' => true
         ));
     }
 

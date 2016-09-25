@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Droid\Plugin\Fs\Model\File\FileFactory;
+use Droid\Lib\Plugin\Model\File\FileFactory;
 use Droid\Plugin\Fs\Model\FsMount;
 use Droid\Plugin\Fs\Model\Fstab\FstabException;
 

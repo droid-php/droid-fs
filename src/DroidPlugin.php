@@ -45,6 +45,7 @@ class DroidPlugin
                 new LineFactory(NameValueLine::class)
             )
         );
+        $commands[] = new \Droid\Plugin\Fs\Command\FsSymlinkCommand();
         $commands[] = new \Droid\Plugin\Fs\Command\FsTemplateCommand();
         $commands[] = new \Droid\Plugin\Fs\Command\FsTouchCommand();
         return $commands;

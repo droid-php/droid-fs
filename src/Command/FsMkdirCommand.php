@@ -48,7 +48,8 @@ class FsMkdirCommand extends Command
         $output->writeLn("Fs mkdir: $directory");
         if (!$input->getOption('force')) {
             if (file_exists($directory)) {
-                throw new RuntimeException("Directory already exists: " . $directory);
+                $this->reportChange($output);
+                return;
             }
         }
         $mode = $input->getOption('mode');

@@ -23,7 +23,7 @@ class FsMountTest extends PHPUnit_Framework_TestCase
         ;
         $this->processBuilder = $this
             ->getMockBuilder(ProcessBuilder::class)
-            ->setMethods(array('setArguments', 'getProcess'))
+            ->setMethods(array('setArguments', 'setTimeout', 'getProcess'))
             ->getMock()
         ;
         $this->processBuilder
@@ -32,6 +32,10 @@ class FsMountTest extends PHPUnit_Framework_TestCase
         ;
         $this->processBuilder
             ->method('setArguments')
+            ->willReturnSelf()
+        ;
+        $this->processBuilder
+            ->method('setTimeout')
             ->willReturnSelf()
         ;
     }
@@ -83,6 +87,12 @@ class FsMountTest extends PHPUnit_Framework_TestCase
             ->method('setArguments')
             ->with($this->equalTo(array('mountpoint', '-q', '/mnt/point')))
         ;
+        $this
+            ->processBuilder
+            ->expects($this->once())
+            ->method('setTimeout')
+            ->with($this->equalTo(0.0))
+        ;
 
         $fsMount->mounted('/mnt/point');
     }
@@ -120,6 +130,12 @@ class FsMountTest extends PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('setArguments')
             ->with($this->equalTo(array('mount', '/mnt/point')))
+        ;
+        $this
+            ->processBuilder
+            ->expects($this->once())
+            ->method('setTimeout')
+            ->with($this->equalTo(0.0))
         ;
 
         $fsMount->mount('/mnt/point');
@@ -174,6 +190,12 @@ class FsMountTest extends PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('setArguments')
             ->with($this->equalTo(array('umount', '/mnt/point')))
+        ;
+        $this
+            ->processBuilder
+            ->expects($this->once())
+            ->method('setTimeout')
+            ->with($this->equalTo(0.0))
         ;
 
         $fsMount->umount('/mnt/point');

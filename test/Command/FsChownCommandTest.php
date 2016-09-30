@@ -32,7 +32,7 @@ class FsChownCommandTest extends \PHPUnit_Framework_TestCase
         ;
         $this->processBuilder = $this
             ->getMockBuilder(ProcessBuilder::class)
-            ->setMethods(array('setArguments', 'getProcess'))
+            ->setMethods(array('setArguments', 'setTimeout', 'getProcess'))
             ->getMock()
         ;
         $this->processBuilder
@@ -41,6 +41,10 @@ class FsChownCommandTest extends \PHPUnit_Framework_TestCase
         ;
         $this->processBuilder
             ->method('setArguments')
+            ->willReturnSelf()
+        ;
+        $this->processBuilder
+            ->method('setTimeout')
             ->willReturnSelf()
         ;
         $this->lookup = $this
@@ -226,6 +230,12 @@ class FsChownCommandTest extends \PHPUnit_Framework_TestCase
             )
         ;
         $this
+            ->processBuilder
+            ->expects($this->once())
+            ->method('setTimeout')
+            ->with($this->equalTo(0.0))
+        ;
+        $this
             ->process
             ->method('run')
             ->willReturn(0)
@@ -291,6 +301,12 @@ class FsChownCommandTest extends \PHPUnit_Framework_TestCase
                     $path
                 )
             )
+        ;
+        $this
+            ->processBuilder
+            ->expects($this->once())
+            ->method('setTimeout')
+            ->with($this->equalTo(0.0))
         ;
         $this
             ->process
@@ -365,6 +381,12 @@ class FsChownCommandTest extends \PHPUnit_Framework_TestCase
             )
         ;
         $this
+            ->processBuilder
+            ->expects($this->once())
+            ->method('setTimeout')
+            ->with($this->equalTo(0.0))
+        ;
+        $this
             ->process
             ->method('run')
             ->willReturn(1)
@@ -429,6 +451,12 @@ class FsChownCommandTest extends \PHPUnit_Framework_TestCase
             )
         ;
         $this
+            ->processBuilder
+            ->expects($this->once())
+            ->method('setTimeout')
+            ->with($this->equalTo(0.0))
+        ;
+        $this
             ->process
             ->method('run')
             ->willReturn(0)
@@ -483,6 +511,11 @@ class FsChownCommandTest extends \PHPUnit_Framework_TestCase
             ->processBuilder
             ->expects($this->never())
             ->method('setArguments')
+        ;
+        $this
+            ->processBuilder
+            ->expects($this->never())
+            ->method('setTimeout')
         ;
         $this
             ->process
